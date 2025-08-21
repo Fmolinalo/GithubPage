@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Mental - Buenas Prácticas de Diseño de Software</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* Mapa mental */
+        .mind-map {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .central-topic {
+            background-color: #4e73df;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .central-topic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .branches-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        .branch {
+            flex: 1;
+            min-width: 300px;
+            max-width: 350px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .branch:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .branch-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4e73df;
+            color: #4e73df;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4e73df;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-btn.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .subtopics {
+            list-style-type: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease;
+            opacity: 0;
+        }
+        
+        .subtopics.show {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        
+        .subtopic {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #f8f9fc;
+            border-radius: 5px;
+            border-left: 3px solid #4e73df;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .subtopic:hover {
+            background-color: #e8f0fe;
+            transform: translateX(5px);
+        }
+        
+        .details-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            transition: right 0.4s ease;
+            z-index: 1000;
+        }
+        
+        .details-panel.show {
+            right: 0;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .panel-content h3 {
+            color: #4e73df;
+            margin: 20px 0 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .panel-content p {
+            margin-bottom: 15px;
+        }
+        
+        .panel-content ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .panel-content li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .branches-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .branch {
+                width: 100%;
+            }
+            
+            .details-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Buenas Prácticas de Diseño de Software</h1>
+            <p class="description">Un mapa mental enfocado en dar explicaciones precisas sobre de que consta el curso de Diseño de Software</p>
+        </header>
+        
+        <div class="mind-map">
+            <div class="central-topic" id="centralTopic">
+                Diseño de Software
+            </div>
+            
+            <div class="branches-container">
+                <!-- Elementos del diseño -->
+                <div class="branch">
+                    <div class="branch-title">
+                        Elementos del Diseño
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    <ul class="subtopics">
+                        <li class="subtopic" data-detail="diseñoDatos">Diseño de datos</li>
+                        <li class="subtopic" data-detail="diseñoArquitectonico">Diseño arquitectónico</li>
+                        <li class="subtopic" data-detail="diseñoInterfaz">Diseño de interfaz</li>
+                        <li class="subtopic" data-detail="diseñoComponente">Diseño a nivel de componente</li>
+                    </ul>
+                </div>
+                
+                <!-- Principios de arquitectura -->
+                <div class="branch">
+                    <div class="branch-title">
+                        Principios de Arquitectura
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    <ul class="subtopics">
+                        <li class="subtopic" data-detail="modularidad">Modularidad y acoplamiento flexible</li>
+                        <li class="subtopic" data-detail="escalabilidad">Escalabilidad</li>
+                        <li class="subtopic" data-detail="sinEstado">Arquitectura sin estado</li>
+                        <li class="subtopic" data-detail="toleranciaFallos">Tolerancia a fallos</li>
+                        <li class="subtopic" data-detail="rendimiento">Optimización del rendimiento</li>
+                        <li class="subtopic" data-detail="seguridad">Seguridad del sistema</li>
+                    </ul>
+                </div>
+                
+                <!-- Principios GRASP y SOLID -->
+                <div class="branch">
+                    <div class="branch-title">
+                        Principios (GRASP & SOLID)
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    <ul class="subtopics">
+                        <li class="subtopic" data-detail="grasp">Principios GRASP</li>
+                        <li class="subtopic" data-detail="solid">Principios SOLID</li>
+                        <li class="subtopic" data-detail="cleanCode">Clean Code</li>
+                    </ul>
+                </div>
+                
+                <!-- Metodologías -->
+                <div class="branch">
+                    <div class="branch-title">
+                        Metodologías
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    <ul class="subtopics">
+                        <li class="subtopic" data-detail="agiles">Metodologías ágiles</li>
+                        <li class="subtopic" data-detail="xp">Extreme Programming (XP)</li>
+                        <li class="subtopic" data-detail="scrum">Scrum</li>
+                        <li class="subtopic" data-detail="ciCd">CI/CD</li>
+                    </ul>
+                </div>
+                
+                <!-- UX y otros -->
+                <div class="branch">
+                    <div class="branch-title">
+                        UX y Consideraciones
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    <ul class="subtopics">
+                        <li class="subtopic" data-detail="ux">Diseño de Experiencia de Usuario</li>
+                        <li class="subtopic" data-detail="patrones">Patrones de diseño</li>
+                        <li class="subtopic" data-detail="pilaresAplicacion">Pilares para aplicaciones</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de detalles -->
+        <div class="details-panel" id="detailsPanel">
+            <button class="close-btn" id="closePanel">×</button>
+            <div class="panel-content" id="panelContent">
+                <h2 id="detailTitle">Título del detalle</h2>
+                <div id="detailContent">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle de subtemas
+            const toggleButtons = document.querySelectorAll('.toggle-btn');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const subtopics = this.parentElement.nextElementSibling;
+                    subtopics.classList.toggle('show');
+                    this.classList.toggle('rotated');
+                });
+            });
+            
+            // Panel de detalles
+            const detailsPanel = document.getElementById('detailsPanel');
+            const panelContent = document.getElementById('detailContent');
+            const detailTitle = document.getElementById('detailTitle');
+            const closePanel = document.getElementById('closePanel');
+            const subtopics = document.querySelectorAll('.subtopic');
+            
+            // Datos para el panel de detalles
+            const detailsData = {
+                diseñoDatos: {
+                    title: "Diseño de Datos",
+                    content: `<p>Define la relación entre los elementos estructurales del programa. Es fundamental para organizar la información que manejará el software.</p>
+                    <p><span class="highlight">Aspectos clave:</span></p>
+                    <ul>
+                        <li>Estructuración de datos coherente</li>
+                        <li>Relaciones entre entidades</li>
+                        <li>Normalización para evitar redundancia</li>
+                        <li>Optimización para el acceso eficiente</li>
+                    </ul>`
+                },
+                diseñoArquitectonico: {
+                    title: "Diseño Arquitectónico",
+                    content: `<p>Describe la comunicación interna del software, con otros sistemas, y con usuarios y operadores. Establece la estructura fundamental del sistema.</p>
+                    <p><span class="highlight">Consideraciones importantes:</span></p>
+                    <ul>
+                        <li>Patrones arquitectónicos (capas, microservicios, etc.)</li>
+                        <li>Comunicación entre componentes</li>
+                        <li>Interacción con sistemas externos</li>
+                        <li>Interfaz con usuarios y operadores</li>
+                    </ul>`
+                },
+                diseñoInterfaz: {
+                    title: "Diseño de Interfaz",
+                    content: `<p>Describe la interacción del sistema con el usuario. Es crucial para la experiencia del usuario y la usabilidad del software.</p>
+                    <p><span class="highlight">Elementos clave:</span></p>
+                    <ul>
+                        <li>Diseño centrado en el usuario (UCD)</li>
+                        <li>Principios de usabilidad y accesibilidad</li>
+                        <li>Consistencia en los elementos visuales</li>
+                        <li>Retroalimentación clara para el usuario</li>
+                    </ul>`
+                },
+                diseñoComponente: {
+                    title: "Diseño a Nivel de Componente",
+                    content: `<p>Una descripción procedimental de cada parte especificada en el diseño arquitectónico. Se enfoca en los detalles de implementación.</p>
+                    <p><span class="highlight">Características:</span></p>
+                    <ul>
+                        <li>Descripción detallada de cada componente</li>
+                        <li>Procedimientos y algoritmos específicos</li>
+                        <li>Interacciones entre componentes</li>
+                        <li>Detalles de implementación</li>
+                    </ul>`
+                },
+                modularidad: {
+                    title: "Modularidad y Acoplamiento Flexible",
+                    content: `<p>Dividir un sistema grande en partes más pequeñas e independientes, con acoplamiento flexible para que se conecten sin depender demasiado entre sí.</p>
+                    <p><span class="highlight">Beneficios:</span></p>
+                    <ul>
+                        <li>Mayor mantenibilidad</li>
+                        <li>Facilidad para realizar pruebas</li>
+                        <li>Reutilización de componentes</li>
+                        <li>Evolución independiente de partes del sistema</li>
+                    </ul>
+                    <p>La arquitectura de microservicios es un ejemplo de este principio, donde una aplicación se divide en servicios pequeños e independientes.</p>`
+                },
+                escalabilidad: {
+                    title: "Escalabilidad",
+                    content: `<p>El software escalable debe gestionar más usuarios, transacciones o datos sin perder rendimiento bajo cargas pesadas.</p>
+                    <p><span class="highlight">Enfoques:</span></p>
+                    <ul>
+                        <li>Escalado horizontal (añadir más servidores/instancias)</li>
+                        <li>Escalado vertical (actualizar una sola máquina)</li>
+                        <li>Planificación de la escalabilidad de la base de datos</li>
+                        <li>Uso de memoria caché para datos de uso frecuente</li>
+                    </ul>
+                    <p>La fragmentación y replicación son técnicas importantes para la escalabilidad de bases de datos.</p>`
+                },
+                sinEstado: {
+                    title: "Arquitectura Sin Estado",
+                    content: `<p>Cada petición al servidor debe incluir toda la información necesaria; los servidores no deben recordar interacciones pasadas ni sesiones de usuario.</p>
+                    <p><span class="highlight">Ventajas:</span></p>
+                    <ul>
+                        <li>Mayor resistencia del sistema</li>
+                        <li>Facilita la distribución del trabajo entre servidores</li>
+                        <li>Mejor escalabilidad</li>
+                        <li>Simplificación de la recuperación ante fallos</li>
+                    </ul>
+                    <p>Este enfoque es fundamental para aplicaciones distribuidas y cloud-native.</p>`
+                },
+                toleranciaFallos: {
+                    title: "Tolerancia a Fallos y Resiliencia",
+                    content: `<p>Asegurar que el sistema funcione incluso cuando algunas partes fallen. Implementar mecanismos para manejar errores y recuperarse de ellos.</p>
+                    <p><span class="highlight">Estrategias:</span></p>
+                    <ul>
+                        <li>Disyuntores para detener peticiones a servicios fallidos</li>
+                        <li>Reintentos después de breves retrasos</li>
+                        <li>Mecanismos de conmutación por error</li>
+                        <li>Redundancia de componentes críticos</li>
+                        <li>Degradación gradual para mantener funcionalidad básica</li>
+                    </ul>`
+                },
+                rendimiento: {
+                    title: "Optimización del Rendimiento",
+                    content: `<p>Priorizar tiempos de carga rápidos e interacciones fluidas. Implementar técnicas para mejorar la eficiencia del software.</p>
+                    <p><span class="highlight">Técnicas clave:</span></p>
+                    <ul>
+                        <li>Almacenamiento en caché (CDN, cachés en memoria)</li>
+                        <li>Optimización de consultas e indexación de bases de datos</li>
+                        <li>Racionalización del código base</li>
+                        <li>Técnicas como la carga lenta (lazy loading)</li>
+                        <li>Algoritmos eficientes</li>
+                    </ul>`
+                },
+                seguridad: {
+                    title: "Seguridad del Sistema",
+                    content: `<p>Proteger datos sensibles y recursos del sistema contra accesos no autorizados o ciberamenazas.</p>
+                    <p><span class="highlight">Principios y prácticas:</span></p>
+                    <ul>
+                        <li>Principio del mínimo privilegio</li>
+                        <li>Autenticación y autorización robustas (OAuth, JWT)</li>
+                        <li>Cifrado de datos en tránsito y en reposo</li>
+                        <li>Diseño de API seguro con limitación de velocidad</li>
+                        <li>Validación de entradas para prevenir inyecciones</li>
+                    </ul>`
+                },
+                grasp: {
+                    title: "Principios GRASP",
+                    content: `<p>General Responsibility Assignment Software Patterns: Consideradas "buenas prácticas" en el diseño orientado a objetos.</p>
+                    <p><span class="highlight">Patrones principales:</span></p>
+                    <ul>
+                        <li><strong>Experto en Información:</strong> Asignar responsabilidad a la clase que tiene toda la información necesaria.</li>
+                        <li><strong>Creador:</strong> Identificar la clase responsable de la creación de nuevos objetos.</li>
+                        <li><strong>Controlador:</strong> Intermediario entre la interfaz y el algoritmo.</li>
+                        <li><strong>Alta Cohesión y Bajo Acoplamiento:</strong> Minimizar dependencias y agrupar responsabilidades relacionadas.</li>
+                        <li><strong>Polimorfismo:</strong> Usar cuando el comportamiento varía según el tipo.</li>
+                        <li><strong>Fabricación Pura:</strong> Crear clases "inventadas" para mejorar cohesión y acoplamiento.</li>
+                        <li><strong>Indirección:</strong> Introducir un elemento intermedio para reducir acoplamiento directo.</li>
+                        <li><strong>Variaciones Protegidas:</strong> Envolver elementos susceptibles de cambio en una interfaz.</li>
+                    </ul>`
+                },
+                solid: {
+                    title: "Principios SOLID",
+                    content: `<p>Conjunto de cinco principios de diseño orientado a objetos que facilitan la creación de sistemas mantenibles y extensibles.</p>
+                    <p><span class="highlight">Los cinco principios:</span></p>
+                    <ul>
+                        <li><strong>S (Single Responsibility):</strong> Una clase debe tener solo una razón para cambiar.</li>
+                        <li><strong>O (Open-Closed):</strong> Las clases deben estar abiertas a extensión pero cerradas a modificación.</li>
+                        <li><strong>L (Liskov Substitution):</strong> Las subclases deben ser sustituibles por sus clases base.</li>
+                        <li><strong>I (Interface Segregation):</strong> Muchas interfaces específicas son mejores que una general.</li>
+                        <li><strong>D (Dependency Inversion):</strong> Depender de abstracciones, no de implementaciones concretas.</li>
+                    </ul>
+                    <p>Estos principios ayudan a eliminar malos diseños y refactorizar el código para hacerlo más legible y extensible.</p>`
+                },
+                cleanCode: {
+                    title: "Clean Code",
+                    content: `<p>Filosofía de desarrollo que busca facilitar la lectura y escritura de código, haciéndolo intuitivo.</p>
+                    <p><span class="highlight">Principios clave:</span></p>
+                    <ul>
+                        <li><strong>KISS (Keep it simple stupid):</strong> Buscar simplicidad y evitar complejidad innecesaria.</li>
+                        <li><strong>DRY (Don't Repeat Yourself):</strong> Evitar duplicación de código.</li>
+                        <li><strong>YAGNI (You Aren't Gonna Need It):</strong> Añadir funciones solo cuando sean necesarias.</li>
+                        <li><strong>Legible antes que conciso:</strong> Priorizar la legibilidad sobre la concisión.</li>
+                    </ul>
+                    <p><span class="highlight">Prácticas específicas:</span></p>
+                    <ul>
+                        <li>Nombres con sentido y precisos</li>
+                        <li>Funciones reducidas con responsabilidad única</li>
+                        <li>Comentarios solo cuando el código no puede expresarse por sí mismo</li>
+                        <li>Formato consistente</li>
+                        <li>Tratamiento adecuado de errores</li>
+                        <li>Clases con único propósito</li>
+                    </ul>`
+                },
+                agiles: {
+                    title: "Metodologías Ágiles",
+                    content: `<p>Adoptar metodologías como Scrum, Kanban o XP, que impulsan la productividad y mejoran la calidad mediante ciclos cortos y retroalimentación constante.</p>
+                    <p><span class="highlight">Ventajas:</span></p>
+                    <ul>
+                        <li>Mejora la calidad del producto</li>
+                        <li>Aumenta la satisfacción del cliente y trabajadores</li>
+                        <li>Fomenta el trabajo colaborativo</li>
+                        <li>Proporciona mayor control y capacidad de predicción</li>
+                        <li>Reduce costos al identificar errores tempranamente</li>
+                    </ul>
+                    <p>El Manifiesto Ágil se basa en: entrega de valor, colaboración de negocio, dinámica de equipo y cultura, y retrospectivas.</p>`
+                },
+                xp: {
+                    title: "Extreme Programming (XP)",
+                    content: `<p>Una de las metodologías ágiles más exitosas, que busca construir productos ajustados al cliente y es flexible a contratiempos.</p>
+                    <p><span class="highlight">Fases de XP:</span></p>
+                    <ul>
+                        <li><strong>Planificación:</strong> Historias de usuario y priorización</li>
+                        <li><strong>Diseño:</strong> Versiones sencillas y prototipos</li>
+                        <li><strong>Codificación:</strong> Programación en parejas para calidad</li>
+                        <li><strong>Pruebas:</strong> Pruebas automáticas continuas</li>
+                        <li><strong>Lanzamiento:</strong> Entrega del producto validado</li>
+                    </ul>
+                    <p><span class="highlight">Roles en XP:</span> Cliente, Desarrolladores, Testers, Tracker, Coach, Manager.</p>`
+                },
+                scrum: {
+                    title: "Scrum",
+                    content: `<p>Metodología de desarrollo incremental que divide proyectos en "Sprints" (ciclos cortos de análisis, desarrollo y testing).</p>
+                    <p><span class="highlight">Elementos clave:</span></p>
+                    <ul>
+                        <li><strong>Sprint:</strong> Ciclo de desarrollo corto (2-4 semanas)</li>
+                        <li><strong>Reuniones:</strong> Planificación, diaria, revisión, retrospectiva</li>
+                        <li><strong>Artefactos:</strong> Product Backlog, Sprint Backlog, Incremento</li>
+                        <li><strong>Roles:</strong> Product Owner, Scrum Master, Equipo de Desarrollo</li>
+                    </ul>
+                    <p>Scrum se enfoca en la entrega iterativa e incremental de valor al cliente.</p>`
+                },
+                ciCd: {
+                    title: "Integración Continua/Despliegue Continuo (CI/CD)",
+                    content: `<p>Prácticas que automatizan el proceso de integración y despliegue de software.</p>
+                    <p><span class="highlight">CI (Integración Continua):</span></p>
+                    <ul>
+                        <li>Fusionar frecuentemente cambios de código</li>
+                        <li>Pruebas y validaciones automatizadas</li>
+                        <li>Detección temprana de problemas</li>
+                    </ul>
+                    <p><span class="highlight">CD (Despliegue Continuo):</span></p>
+                    <ul>
+                        <li>Automatiza el proceso de entrega del software</li>
+                        <li>Despliegue a entornos de prueba o producción</li>
+                        <li>Agiliza la entrega y reduce errores</li>
+                    </ul>
+                    <p>Estas prácticas aumentan la confianza y facilitan la escalabilidad, siendo una estrategia preventiva para la deuda técnica.</p>`
+                },
+                ux: {
+                    title: "Diseño de Experiencia de Usuario (UX)",
+                    content: `<p>Enfocado en que los productos de software sean intuitivos, eficientes y satisfactorios para los usuarios.</p>
+                    <p><span class="highlight">Principios fundamentales:</span></p>
+                    <ul>
+                        <li><strong>Diseño Centrado en el Usuario (UCD):</strong> Prioriza necesidades del usuario</li>
+                        <li><strong>Simplicidad:</strong> Interfaz limpia que minimiza complejidad</li>
+                        <li><strong>Coherencia:</strong> Uniformidad en elementos visuales e interactivos</li>
+                        <li><strong>Retroalimentación:</strong> Información clara sobre acciones del usuario</li>
+                        <li><strong>Accesibilidad:</strong> Utilizable por personas con diversas habilidades</li>
+                        <li><strong>Jerarquía:</strong> Organiza elementos para guiar la atención</li>
+                        <li><strong>Affordance:</strong> Propiedades que sugieren cómo usar un elemento</li>
+                        <li><strong>Navegación:</strong> Rutas claras y lógicas</li>
+                        <li><strong>Rendimiento:</strong> Velocidad y eficiencia en las respuestas</li>
+                        <li><strong>Prevención y Manejo de Errores:</strong> Minimizar errores y guiar cuando ocurren</li>
+                    </ul>`
+                },
+                patrones: {
+                    title: "Patrones de Diseño",
+                    content: `<p>Soluciones habituales y probadas a problemas comunes en el diseño de software, reutilizables en diferentes contextos.</p>
+                    <p><span class="highlight">Tipos de patrones:</span></p>
+                    <ul>
+                        <li><strong>Patrones creacionales:</strong> Relacionados con la creación de objetos</li>
+                        <li><strong>Patrones estructurales:</strong> Concernientes a cómo las clases se relacionan</li>
+                        <li><strong>Patrones de comportamiento:</strong> Relacionados con procedimientos y asignación de responsabilidad</li>
+                    </ul>
+                    <p>Actúan como vocabulario común para hablar sobre diseño y ayudan a los desarrolladores a entender el diseño de forma fácil y rápida.</p>`
+                },
+                pilaresAplicacion: {
+                    title: "Pilares para Construir Aplicaciones",
+                    content: `<p>Seis pilares esenciales para construir aplicaciones exitosas:</p>
+                    <ol>
+                        <li><strong>Definición Clara de Requerimientos y Metodologías Ágiles:</strong> Comprender el problema y comunicación constante.</li>
+                        <li><strong>Diseño UX:</strong> Visualizar ideas con mockups y prototipos.</li>
+                        <li><strong>Diseño de Bases de Datos Relacionales:</strong> Almacenamiento eficiente y modelado de datos.</li>
+                        <li><strong>Creación y Consumo de API:</strong> Comunicación entre aplicaciones mediante protocolos como HTTP/REST.</li>
+                        <li><strong>Autenticación y Autorización:</strong> Sistemas robustos para proteger datos.</li>
+                        <li><strong>Principios de Arquitectura de Software:</strong> Separación de responsabilidades y modularidad.</li>
+                    </ol>
+                    <p>Adicionalmente, el despliegue y entorno productivo son cruciales para hacer la aplicación accesible.</p>`
+                }
+            };
+            
+            // Mostrar detalles al hacer clic en un subtema
+            subtopics.forEach(subtopic => {
+                subtopic.addEventListener('click', function() {
+                    const detailKey = this.getAttribute('data-detail');
+                    if (detailsData[detailKey]) {
+                        detailTitle.textContent = detailsData[detailKey].title;
+                        panelContent.innerHTML = detailsData[detailKey].content;
+                        detailsPanel.classList.add('show');
+                    }
+                });
+            });
+            
+            // Cerrar panel de detalles
+            closePanel.addEventListener('click', function() {
+                detailsPanel.classList.remove('show');
+            });
+            
+            // Cerrar panel al hacer clic fuera de él
+            document.addEventListener('click', function(event) {
+                if (detailsPanel.classList.contains('show') && 
+                    !detailsPanel.contains(event.target) && 
+                    !event.target.classList.contains('subtopic')) {
+                    detailsPanel.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
